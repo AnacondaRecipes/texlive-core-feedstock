@@ -1,14 +1,6 @@
 #! /bin/bash
 
-
-# Need the fallback path for testing in some cases.
-if [ "$(uname)" == "Darwin" ]
-then
-    export LIBRARY_SEARCH_VAR=DYLD_FALLBACK_LIBRARY_PATH
-else
-    export LIBRARY_SEARCH_VAR=LD_LIBRARY_PATH
-fi
-
+export LDFLAGS="${LDFLAGS} -Wl,-rpath,${PREFIX}/lib"
 
 # kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
 # up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
@@ -22,8 +14,6 @@ sed \
     -e "s|%TEXMFCNF =.*|TEXMFCNF = $PREFIX/share/texlive/texmf-dist/web2c|" \
     <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
-
-export PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig"
 
 # We need to package graphite2 to be able to use it harfbuzz.
 # Using our cairo breaks the recipe and `mpfr` is not found triggering the library from TL tree.
@@ -74,9 +64,9 @@ mkdir -p tmp_build && pushd tmp_build
                --without-system-graphite2 \
                --without-system-poppler \
                --without-x
-  make -j$CPU_COUNT
-  eval ${LIBRARY_SEARCH_VAR}="${PREFIX}/lib" LC_ALL=C make check
-  make install -j$CPU_COUNT
+  make -j${CPU_COUNT} ${VERBOSE_AT}
+  LC_ALL=C make check
+  make install -j${CPU_COUNT}
 popd
 
 # Remove info and man pages.
