@@ -19,7 +19,9 @@ rm -f tmp.cnf
 # Using our cairo breaks the recipe and `mpfr` is not found triggering the library from TL tree.
 
 mkdir -p tmp_build && pushd tmp_build
-  ../configure --prefix=$PREFIX \
+  ../configure --prefix=${PREFIX} \
+               --host=${HOST} \
+               --build=${BUILD} \
                --datarootdir="$PREFIX/share/texlive" \
                --disable-all-pkgs \
                --disable-native-texlive-build \
@@ -60,10 +62,7 @@ mkdir -p tmp_build && pushd tmp_build
                --with-sytem-mpfr \
                --with-mpfr-includes=$PREFIX/include \
                --with-mprf-libdir=$PREFIX/lib \
-               --without-system-harfbuzz \
-               --without-system-graphite2 \
-               --without-system-poppler \
-               --without-x
+               --without-x || { cat config.log ; exit 1 ; }
   make -j${CPU_COUNT} ${VERBOSE_AT}
   LC_ALL=C make check
   make install -j${CPU_COUNT}
