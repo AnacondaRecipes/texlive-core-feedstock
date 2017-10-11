@@ -10,13 +10,14 @@ source:
   sha256: c0a032aa9fa29e7cb521659779d6415f3b4b062a6a44193fb4e79cfefe7b8954
 
 build:
-  number: 2
+  number: 3
   skip: True  # [win]
   detect_binary_files_with_prefix: true
 
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
     # These are needed for linking to cairo
     - {{ cdt('libxrender-devel') }}  # [linux]
     - {{ cdt('libxext-devel') }}     # [linux]

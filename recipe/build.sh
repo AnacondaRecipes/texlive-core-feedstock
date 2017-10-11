@@ -63,7 +63,8 @@ mkdir -p tmp_build && pushd tmp_build
                --with-mpfr-includes=$PREFIX/include \
                --with-mprf-libdir=$PREFIX/lib \
                --without-x || { cat config.log ; exit 1 ; }
-  make -j${CPU_COUNT} ${VERBOSE_AT}
+  # There is a race-condition in the build system.
+  make -j${CPU_COUNT} ${VERBOSE_AT} || make -j1 ${VERBOSE_AT}
   LC_ALL=C make check
   make install -j${CPU_COUNT}
 popd
