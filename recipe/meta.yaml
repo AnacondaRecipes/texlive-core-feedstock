@@ -1,4 +1,4 @@
-{% set version = "20170520" %}
+{% set version = "20180414" %}
 
 package:
   name: texlive-core
@@ -9,32 +9,38 @@ source:
   sha256: c0a032aa9fa29e7cb521659779d6415f3b4b062a6a44193fb4e79cfefe7b8954
 
 build:
-  number: 2
+  number: 0
   skip: True  # [win]
   detect_binary_files_with_prefix: true
 
 requirements:
   build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    # These are needed for linking to cairo
+    - {{ cdt('libxrender-devel') }}  # [linux]
+    - {{ cdt('libxext-devel') }}     # [linux]
+    - {{ cdt('libxau-devel') }}      # [linux]
     - pkg-config
-    - cairo 1.14.*
-    - gmp 6.1.*
-    - icu 58.*
-    - mpfr 3.1.*
-    - pixman 0.34.*
-    - freetype 2.8.*
-    - libpng >=1.6.32,<1.6.35
-    - zlib 1.2.11
-    - perl 5.22.2.1
+  host:
+    - freetype
+    - icu
+    - libpng
+    - zlib
+    - cairo
+    - gmp
+    - mpfr
+    - pixman
+    - perl
+    - poppler
+    - harfbuzz
+    - graphite2
   run:
-    - cairo 1.14.*
-    - gmp 6.1.*
-    - icu 58.*
-    - mpfr 3.1.*
-    - pixman 0.34.*
-    - freetype 2.8.*
-    - libpng >=1.6.32,<1.6.35
-    - zlib 1.2.11
-    - perl 5.22.2.1
+    - mpfr
+    - perl
+    - poppler
+    - harfbuzz
+    - graphite2
 
 test:
   commands:
@@ -43,8 +49,6 @@ test:
     # Test the symlinks.
     - pdflatex --version
     - latex --version
-    - conda inspect linkages -p $PREFIX $PKG_NAME  # [not win]
-    - conda inspect objects -p $PREFIX $PKG_NAME  # [osx]
 
 about:
   home: https://www.tug.org/texlive/

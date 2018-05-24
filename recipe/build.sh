@@ -23,13 +23,12 @@ sed \
     <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
-export PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig"
-
 # We need to package graphite2 to be able to use it harfbuzz.
 # Using our cairo breaks the recipe and `mpfr` is not found triggering the library from TL tree.
 
 mkdir -p tmp_build && pushd tmp_build
-  ../configure --prefix=$PREFIX \
+  ../configure --prefix=${PREFIX} \
+               --host=${HOST} \
                --datarootdir="$PREFIX/share/texlive" \
                --disable-all-pkgs \
                --disable-native-texlive-build \
@@ -70,13 +69,11 @@ mkdir -p tmp_build && pushd tmp_build
                --with-sytem-mpfr \
                --with-mpfr-includes=$PREFIX/include \
                --with-mprf-libdir=$PREFIX/lib \
-               --without-system-harfbuzz \
-               --without-system-graphite2 \
-               --without-system-poppler \
-               --without-x
-  make -j$CPU_COUNT
-  eval ${LIBRARY_SEARCH_VAR}="${PREFIX}/lib" LC_ALL=C make check
-  make install -j$CPU_COUNT
+               --without-x || { cat config.log ; exit 1 ; }
+  # There is a race-condition in the build system.
+  make -j${CPU_COUNT} ${VERBOSE_AT} || make -j1 ${VERBOSE_AT}
+  LC_ALL=C make check
+  make install -j${CPU_COUNT}
 popd
 
 # Remove info and man pages.
