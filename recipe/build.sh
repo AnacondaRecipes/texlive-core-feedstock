@@ -29,6 +29,7 @@ rm -f tmp.cnf
 mkdir -p tmp_build && pushd tmp_build
   ../configure --prefix=${PREFIX} \
                --host=${HOST} \
+               --build=${BUILD} \
                --datarootdir="$PREFIX/share/texlive" \
                --disable-all-pkgs \
                --disable-native-texlive-build \
