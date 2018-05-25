@@ -22,6 +22,7 @@ requirements:
     - {{ cdt('libxext-devel') }}     # [linux]
     - {{ cdt('libxau-devel') }}      # [linux]
     - pkg-config
+    - make
   host:
     - freetype
     - icu
@@ -33,7 +34,6 @@ requirements:
     - pixman
     - perl
     - poppler
-# >=0.65
     - harfbuzz
     - graphite2
 
