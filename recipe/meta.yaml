@@ -7,6 +7,8 @@ package:
 source:
   url: https://www.ctan.org/tex-archive/systems/texlive/Source/texlive-{{ version }}-source.tar.xz
   sha256: fe0036d5f66708ad973cdc4e413c0bb9ee2385224481f7b0fb229700a0891e4e
+  patches:
+    - 0001-support-poppler-0.64.0.patch
 
 build:
   number: 0
@@ -22,20 +24,34 @@ requirements:
     - {{ cdt('libxext-devel') }}     # [linux]
     - {{ cdt('libxau-devel') }}      # [linux]
     - pkg-config
+    - texinfo
     - make
   host:
+  # --with-system-cairo     use installed cairo headers and library (requires
+  # --with-system-freetype2 use installed freetype2 headers and library
+  # --with-system-gmp       use installed gmp headers and library
+  # --with-system-graphite2 use installed graphite2 headers and library
+  # --with-system-harfbuzz  use installed harfbuzz headers and library (requires
+  # --with-system-icu       use installed ICU headers and libraries (requires
+  # --with-system-libpng    use installed libpng headers and library (requires
+  # --with-system-mpfr      use installed mpfr headers and library
+  # --with-system-pixman    use installed pixman headers and library (requires
+  # --with-system-poppler   use installed poppler headers and library (requires
+  # --with-system-zlib      use installed zlib headers and library
+
+    - cairo
     - freetype
+    - fontconfig
+    - gmp
+    - graphite2
+    - harfbuzz
     - icu
     - libpng
-    - zlib
-    - cairo
-    - gmp
     - mpfr
     - pixman
     - perl
     - poppler
-    - harfbuzz
-    - graphite2
+    - zlib
 
 test:
   commands:

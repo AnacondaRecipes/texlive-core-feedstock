@@ -1,18 +1,21 @@
 #! /bin/bash
 
-
-# Need the fallback path for testing in some cases.
-if [ "$(uname)" == "Darwin" ]
-then
-    export LIBRARY_SEARCH_VAR=DYLD_FALLBACK_LIBRARY_PATH
-else
-    export LIBRARY_SEARCH_VAR=LD_LIBRARY_PATH
-fi
-
-
 # kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
 # up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
 # so we patch that up after install.
+
+declare -a CONFIG_EXTRA
+if [[ ${host_platform} =~ .*ppc.* ]]; then
+  # luajit is incompatible with powerpc.
+  CONFIG_EXTRA+=(-disable-luajittex)
+elif [[ ${host_platform} =~ .*linux.* ]]; then
+  # -O2 results in:
+  # FAIL: mplibdir/mptraptest.test
+  # FAIL: pdftexdir/pdftosrc.test
+  # .. so (sorry!)
+  export CFLAGS="${CFLAGS} -O1"
+  export CXXFLAGS="${CXXFLAGS} -O1"
+fi
 
 mv $SRC_DIR/texk/kpathsea/texmf.cnf tmp.cnf
 sed \
@@ -26,11 +29,12 @@ rm -f tmp.cnf
 # We need to package graphite2 to be able to use it harfbuzz.
 # Using our cairo breaks the recipe and `mpfr` is not found triggering the library from TL tree.
 
-mkdir -p tmp_build && pushd tmp_build
-  ../configure --prefix=${PREFIX} \
+mkdir build || true
+pushd build
+  ../configure --prefix="${PREFIX}" \
                --host=${HOST} \
                --build=${BUILD} \
-               --datarootdir="$PREFIX/share/texlive" \
+               --datarootdir="${PREFIX}"/share/texlive \
                --disable-all-pkgs \
                --disable-native-texlive-build \
                --disable-ipc \
@@ -54,23 +58,19 @@ mkdir -p tmp_build && pushd tmp_build
                --enable-web-progs \
                --enable-texlive \
                --enable-dvipdfm-x \
-               --with-system-icu \
-               --with-icu-includes=$PREFIX/include \
-               --with-icu-libdir=$PREFIX/lib \
-               --with-system-gmp \
-               --with-gmp-includes=$PREFIX/include \
-               --with-gmp-libdir=$PREFIX/lib \
                --with-system-cairo \
-               --with-system-pixman \
                --with-system-freetype2 \
+               --with-system-gmp \
+               --with-system-graphite2 \
+               --with-system-harfbuzz \
+               --with-system-icu \
                --with-system-libpng \
+               --with-system-mpfr \
+               --with-system-pixman \
+               --with-system-poppler \
                --with-system-zlib \
-               --with-zlib-includes=$PREFIX/include \
-               --with-zlib-libdir=$PREFIX/lib \
-               --with-sytem-mpfr \
-               --with-mpfr-includes=$PREFIX/include \
-               --with-mprf-libdir=$PREFIX/lib \
-               --without-x || { cat config.log ; exit 1 ; }
+               --without-x \
+               "${CONFIG_EXTRA[@]}" || { cat config.log ; exit 1 ; }
   # There is a race-condition in the build system.
   make -j${CPU_COUNT} ${VERBOSE_AT} || make -j1 ${VERBOSE_AT}
   LC_ALL=C make check
@@ -78,15 +78,17 @@ mkdir -p tmp_build && pushd tmp_build
 popd
 
 # Remove info and man pages.
-rm -rf $PREFIX/share/man
-rm -rf $PREFIX/share/texlive/info
+rm -rf "${PREFIX}"/share/man
+rm -rf "${PREFIX}"/share/texlive/info
 
-mv $PREFIX/share/texlive/texmf-dist/web2c/texmf.cnf tmp.cnf
+mv "${PREFIX}"/share/texlive/texmf-dist/web2c/texmf.cnf tmp.cnf
 sed \
     -e "s|TEXMFCNF =.*|TEXMFCNF = {$PREFIX/share/texlive/texmf-local/web2c, $PREFIX/share/texlive/texmf-dist/web2c}|" \
     <tmp.cnf >$PREFIX/share/texlive/texmf-dist/web2c/texmf.cnf
 rm -f tmp.cnf
 
 # Create symlinks for pdflatex and latex
-ln -s $PREFIX/bin/pdftex $PREFIX/bin/pdflatex
-ln -s $PREFIX/bin/pdftex $PREFIX/bin/latex
+pushd "${PREFIX}"/bin
+  ln -s pdftex pdflatex
+  ln -s pdftex latex
+popd
