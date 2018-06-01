@@ -13,8 +13,8 @@ elif [[ ${host_platform} =~ .*linux.* ]]; then
   # FAIL: mplibdir/mptraptest.test
   # FAIL: pdftexdir/pdftosrc.test
   # .. so (sorry!)
-  export CFLAGS="${CFLAGS} -O1"
-  export CXXFLAGS="${CXXFLAGS} -O1"
+  export CFLAGS="${CFLAGS} -O1 -ggdb"
+  export CXXFLAGS="${CXXFLAGS} -O1 -ggdb"
 fi
 
 mv $SRC_DIR/texk/kpathsea/texmf.cnf tmp.cnf
