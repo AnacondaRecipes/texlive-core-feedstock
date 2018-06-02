@@ -1,20 +1,31 @@
 #! /bin/bash
 
+# From: https://github.com/TeX-Live/texlive-source/blob/master/Buil
+unset TEXMFCNF; export TEXMFCNF
+LANG=C; export LANG
+[[ -d "${PREFIX}"/texmf ]] || mkdir -p "${PREFIX}"/texmf
+./configure --help
+
 # kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
 # up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
 # so we patch that up after install.
 
 declare -a CONFIG_EXTRA
-if [[ ${host_platform} =~ .*ppc.* ]]; then
+if [[ ${target_platform} =~ .*ppc.* ]]; then
   # luajit is incompatible with powerpc.
   CONFIG_EXTRA+=(-disable-luajittex)
-elif [[ ${host_platform} =~ .*linux.* ]]; then
+fi
+
+if [[ ${target_platform} =~ .*linux.* ]]; then
   # -O2 results in:
   # FAIL: mplibdir/mptraptest.test
   # FAIL: pdftexdir/pdftosrc.test
   # .. so (sorry!)
-  export CFLAGS="${CFLAGS} -O1 -ggdb"
-  export CXXFLAGS="${CXXFLAGS} -O1 -ggdb"
+  export CFLAGS="${CFLAGS} -O0 -ggdb"
+  export CXXFLAGS="${CXXFLAGS} -O0 -ggdb"
+  CONFIG_EXTRA+=(--enable-debug)
+else
+  CONFIG_EXTRA+=(--disable-debug)
 fi
 
 mv $SRC_DIR/texk/kpathsea/texmf.cnf tmp.cnf
@@ -73,7 +84,7 @@ pushd build
                "${CONFIG_EXTRA[@]}" || { cat config.log ; exit 1 ; }
   # There is a race-condition in the build system.
   make -j${CPU_COUNT} ${VERBOSE_AT} || make -j1 ${VERBOSE_AT}
-  LC_ALL=C make check
+  LC_ALL=C make check ${VERBOSE_AT}
   make install -j${CPU_COUNT}
 popd
 
