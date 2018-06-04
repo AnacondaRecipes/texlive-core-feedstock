@@ -16,7 +16,9 @@ if [[ ${target_platform} =~ .*ppc.* ]]; then
   CONFIG_EXTRA+=(-disable-luajittex)
 fi
 
-if [[ ${target_platform} =~ .*linux.* ]]; then
+TEST_SEGFAULT=no
+
+if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
   # -O2 results in:
   # FAIL: mplibdir/mptraptest.test
   # FAIL: pdftexdir/pdftosrc.test
@@ -89,15 +91,18 @@ pushd build-tmp
   # make check reads files from the installation prefix:
   make install -j${CPU_COUNT}
   LC_ALL=C make check ${VERBOSE_AT}
-  echo "pushd ${SRC_DIR}/build-tmp/texk/web2c"
-  echo "LC_ALL=C make check ${VERBOSE_AT}"
-  echo "cat mplibdir/mptraptest.log"
-  pushd "${SRC_DIR}/build-tmp/texk/web2c/mpost"
-    # I believe mpost test fails here because it tries to load mpost itself as a configuration file
-    # abd this happens in both failing tests on Linux.
-    LC_ALL=C ../mpost --ini ../mpost
-  popd
-  exit 1
+  if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
+    echo "pushd ${SRC_DIR}/build-tmp/texk/web2c"
+    echo "LC_ALL=C make check ${VERBOSE_AT}"
+    echo "cat mplibdir/mptraptest.log"
+    pushd "${SRC_DIR}/build-tmp/texk/web2c/mpost"
+      # I believe mpost test fails here because it tries to load mpost itself as a configuration file
+      # .. this happens in both failing tests on Linux. Debug builds (CFLAGS-wise) do not suffer a
+      # segfault at this point but release ones. Skipping for now, will re-visit later.
+      LC_ALL=C ../mpost --ini ../mpost
+    popd
+    exit 1
+  fi
 popd
 
 # Remove info and man pages.
