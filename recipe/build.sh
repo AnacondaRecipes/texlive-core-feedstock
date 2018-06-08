@@ -90,8 +90,10 @@ pushd build-tmp
   make -j${CPU_COUNT} ${VERBOSE_AT} || make -j1 ${VERBOSE_AT}
   # make check reads files from the installation prefix:
   make install -j${CPU_COUNT}
-  LC_ALL=C make check ${VERBOSE_AT}
-  if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
+  if [[ ! ${target_platform} =~ .*linux.* ]]; then
+    LC_ALL=C make check ${VERBOSE_AT}
+  elif [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
+    LC_ALL=C make check ${VERBOSE_AT}
     echo "pushd ${SRC_DIR}/build-tmp/texk/web2c"
     echo "LC_ALL=C make check ${VERBOSE_AT}"
     echo "cat mplibdir/mptraptest.log"
