@@ -31,25 +31,29 @@ else
 fi
 
 # Requires prefix replacement, which does not work correctly.
-# mv $SRC_DIR/texk/kpathsea/texmf.cnf tmp.cnf
-# sed \
-#     -e "s|TEXMFROOT =.*|TEXMFROOT = $PREFIX/share/texlive|" \
-#     -e "s|TEXMFLOCAL =.*|TEXMFLOCAL = $PREFIX/share/texlive/texmf-local|" \
-#     -e "/^TEXMFCNF/,/^}/d" \
-#     -e "s|%TEXMFCNF =.*|TEXMFCNF = $PREFIX/share/texlive/texmf-dist/web2c|" \
-#     <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
-# rm -f tmp.cnf
+mv "${SRC_DIR}"/texk/kpathsea/texmf.cnf tmp.cnf
+sed \
+    -e "s|TEXMFROOT =.*|TEXMFROOT = ${PREFIX}/share/texlive|" \
+    -e "s|TEXMFLOCAL =.*|TEXMFLOCAL = ${PREFIX}/share/texlive/texmf-local|" \
+    -e "/^TEXMFCNF/,/^}/d" \
+    -e "s|%TEXMFCNF =.*|TEXMFCNF = ${PREFIX}/share/texlive/texmf-dist/web2c|" \
+    <tmp.cnf >"${SRC_DIR}"/texk/kpathsea/texmf.cnf
+rm -f tmp.cnf
 
-# We need to package graphite2 to be able to use it harfbuzz.
-# Using our cairo breaks the recipe and `mpfr` is not found triggering the library from TL tree.
+[[ -d "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive ]] || mkdir -p "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive
+[[ -d "${PREFIX}"/share/texlive/tlpkg/TeXLive ]] || mkdir -p "${PREFIX}"/share/texlive/tlpkg/TeXLive
+
+# Completely essential, see https://github.com/conda-forge/texlive-core-feedstock/issues/19
+install -v -m644 texk/tests/TeXLive/* "${PREFIX}"/share/texlive/tlpkg/TeXLive/ || exit 1
+install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive/ || exit 1
 
 mkdir build-tmp || true
 pushd build-tmp
   ${SRC_DIR}/configure \
                --prefix="${PREFIX}" \
                --host=${HOST} \
-               --build=${BUILD} \
                --datarootdir="${PREFIX}"/share/texlive \
+               --build=${BUILD} \
                --disable-all-pkgs \
                --disable-native-texlive-build \
                --disable-ipc \
