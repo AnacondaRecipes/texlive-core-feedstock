@@ -3,8 +3,8 @@
 # From: https://github.com/TeX-Live/texlive-source/blob/master/Buil
 unset TEXMFCNF; export TEXMFCNF
 LANG=C; export LANG
-[[ -d "${PREFIX}"/texmf ]] || mkdir -p "${PREFIX}"/texmf
-./configure --help
+# [[ -d "${PREFIX}"/texmf ]] || mkdir -p "${PREFIX}"/texmf
+# ./configure --help
 
 # kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
 # up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
@@ -40,12 +40,13 @@ sed \
     <tmp.cnf >"${SRC_DIR}"/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
-[[ -d "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive ]] || mkdir -p "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive
 [[ -d "${PREFIX}"/share/texlive/tlpkg/TeXLive ]] || mkdir -p "${PREFIX}"/share/texlive/tlpkg/TeXLive
 
 # Completely essential, see https://github.com/conda-forge/texlive-core-feedstock/issues/19
-install -v -m644 texk/tests/TeXLive/* "${PREFIX}"/share/texlive/tlpkg/TeXLive/ || exit 1
-install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive/ || exit 1
+install -v -m644 texk/tests/TeXLive/* "${PREFIX}"/share/texlive/tlpkg/TeXLive || exit 1
+# install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive || exit 1
+
+set -x
 
 mkdir build-tmp || true
 pushd build-tmp
@@ -93,7 +94,19 @@ pushd build-tmp
   # There is a race-condition in the build system.
   make -j${CPU_COUNT} ${VERBOSE_AT} || make -j1 ${VERBOSE_AT}
   # make check reads files from the installation prefix:
-  make install -j${CPU_COUNT}
+  make install-strip -j${CPU_COUNT}
+  make texlinks
+
+  # At this point BLFS does:
+  # tar -xf ../../texlive-20180414-texmf.tar.xz -C /opt/texlive/2018 --strip-components=1
+  # .. but we would like to avoid this 2.5GB of stuff.
+  [[ -d "${PREFIX}"/share/texlive/texmf-dist ]] || mkdir -p "${PREFIX}"/share/texlive/texmf-dist
+  cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${PREFIX}"/share/texlive/texmf-dist/
+
+  mktexlsr || exit 1
+  fmtutil-sys --all || exit 1
+  mtxrun --generate || exit 1
+
   if [[ ! ${target_platform} =~ .*linux.* ]]; then
     LC_ALL=C make check ${VERBOSE_AT}
   elif [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then

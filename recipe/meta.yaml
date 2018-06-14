@@ -13,15 +13,15 @@ source:
     #   - 0001-support-poppler-0.64.0.patch
 
   # 2.5GB download ..
-  # - url: ftp://tug.org/texlive/historic/2018/texlive-20180414-texmf.tar.xz
-  #   md5: 05330b3b5445ef60b08a0ed660c55c92
-  #   folder: texmf
+  - url: ftp://tug.org/texlive/historic/2018/texlive-20180414-texmf.tar.xz
+    md5: 05330b3b5445ef60b08a0ed660c55c92
+    folder: texmf
   # .. of which we need one file. I checked the sha256 against the one in
   # texlive-20180414-texmf.tar.xz and they matched. File also included as
   # part of the recipe, just in-case. In future will need updating.
-  - url: https://www.tug.org/texlive/devsrc/Master/texmf-dist/scripts/texlive/mktexlsr.pl
-    sha256: a1164518f96e76ed37766326da154a2656ab7bda94333049408dbe391bdae16c
-    folder: texmf/texmf-dist/scripts/texlive/mktexlsr.pl
+  # - url: https://www.tug.org/texlive/devsrc/Master/texmf-dist/scripts/texlive/mktexlsr.pl
+  #   sha256: a1164518f96e76ed37766326da154a2656ab7bda94333049408dbe391bdae16c
+  #   folder: texmf/texmf-dist/scripts/texlive
 
 build:
   number: 1
