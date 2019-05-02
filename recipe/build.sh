@@ -53,7 +53,12 @@ pushd build-tmp
   ${SRC_DIR}/configure \
                --prefix="${PREFIX}" \
                --host=${HOST} \
+               --bindir=${PREFIX}/bin \
                --datarootdir="${PREFIX}"/share/texlive \
+               --includedir="${PREFIX}"/include \
+               --infodir=/tmp \
+               --libdir="${PREFIX}"/lib \
+               --mandir="${PREFIX}"/share/texlive/texmf-dist/doc/man \
                --build=${BUILD} \
                --disable-all-pkgs \
                --disable-native-texlive-build \
@@ -104,7 +109,7 @@ pushd build-tmp
   cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${PREFIX}"/share/texlive/texmf-dist/
 
   mktexlsr || exit 1
-  fmtutil-sys --all || exit 1
+  fmtutil --user --all || exit 1
   mtxrun --generate || exit 1
 
   if [[ ! ${target_platform} =~ .*linux.* ]]; then
