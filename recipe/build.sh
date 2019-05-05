@@ -1,14 +1,13 @@
 #! /bin/bash
 
-# From: https://github.com/TeX-Live/texlive-source/blob/master/Buil
+set -e
+set -x
+
+# From: https://github.com/TeX-Live/texlive-source/blob/trunk/Build
 unset TEXMFCNF; export TEXMFCNF
 LANG=C; export LANG
 # [[ -d "${PREFIX}"/texmf ]] || mkdir -p "${PREFIX}"/texmf
 # ./configure --help
-
-# kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
-# up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
-# so we patch that up after install.
 
 declare -a CONFIG_EXTRA
 if [[ ${target_platform} =~ .*ppc.* ]]; then
@@ -16,9 +15,10 @@ if [[ ${target_platform} =~ .*ppc.* ]]; then
   CONFIG_EXTRA+=(-disable-luajittex)
 fi
 
-TEST_SEGFAULT=no
+TEST_SEGFAULT=yes
 
-if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
+# if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
+if [[ ${TEST_SEGFAULT} == yes ]]; then
   # -O2 results in:
   # FAIL: mplibdir/mptraptest.test
   # FAIL: pdftexdir/pdftosrc.test
@@ -30,6 +30,10 @@ else
   CONFIG_EXTRA+=(--disable-debug)
 fi
 
+
+# kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
+# up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
+# so we patch that up after install.
 # Requires prefix replacement, which does not work correctly.
 mv "${SRC_DIR}"/texk/kpathsea/texmf.cnf tmp.cnf
 sed \
@@ -41,25 +45,22 @@ sed \
 rm -f tmp.cnf
 
 [[ -d "${PREFIX}"/share/texlive/tlpkg/TeXLive ]] || mkdir -p "${PREFIX}"/share/texlive/tlpkg/TeXLive
+[[ -d "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive ]] || mkdir -p "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive
 
 # Completely essential, see https://github.com/conda-forge/texlive-core-feedstock/issues/19
+find . -name "TexLive"
 install -v -m644 texk/tests/TeXLive/* "${PREFIX}"/share/texlive/tlpkg/TeXLive || exit 1
-# install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive || exit 1
+install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive || exit 1
 
-set -x
+export KPATHSEA_WARNING=0
 
-mkdir build-tmp || true
-pushd build-tmp
+mkdir tmp_build || true
+pushd tmp_build
   ${SRC_DIR}/configure \
                --prefix="${PREFIX}" \
                --host=${HOST} \
-               --bindir=${PREFIX}/bin \
-               --datarootdir="${PREFIX}"/share/texlive \
-               --includedir="${PREFIX}"/include \
-               --infodir=/tmp \
-               --libdir="${PREFIX}"/lib \
-               --mandir="${PREFIX}"/share/texlive/texmf-dist/doc/man \
                --build=${BUILD} \
+               --datarootdir="${PREFIX}"/share/texlive \
                --disable-all-pkgs \
                --disable-native-texlive-build \
                --disable-ipc \
@@ -109,12 +110,13 @@ pushd build-tmp
   cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${PREFIX}"/share/texlive/texmf-dist/
 
   mktexlsr || exit 1
-  fmtutil --user --all || exit 1
+  fmtutil -sys --all || exit 1
   mtxrun --generate || exit 1
 
-  if [[ ! ${target_platform} =~ .*linux.* ]]; then
-    LC_ALL=C make check ${VERBOSE_AT}
-  elif [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
+  #if [[ ! ${target_platform} =~ .*linux.* ]]; then
+  #  LC_ALL=C make check ${VERBOSE_AT}
+  #el
+  if [[ ${TEST_SEGFAULT} == yes ]]; then # && [[ ${target_platform} =~ .*linux.* ]]; then
     LC_ALL=C make check ${VERBOSE_AT}
     echo "pushd ${SRC_DIR}/build-tmp/texk/web2c"
     echo "LC_ALL=C make check ${VERBOSE_AT}"
