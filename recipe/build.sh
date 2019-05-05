@@ -110,7 +110,7 @@ pushd tmp_build
   cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${PREFIX}"/share/texlive/texmf-dist/
 
   mktexlsr || exit 1
-  fmtutil -sys --all || exit 1
+  fmtutil-sys --all || exit 1
   mtxrun --generate || exit 1
 
   #if [[ ! ${target_platform} =~ .*linux.* ]]; then
