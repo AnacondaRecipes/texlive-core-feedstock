@@ -72,6 +72,7 @@ test:
   files:
     - samplefile.tex
   commands:
+    - kpsewhich -var-value=TEXMFROOT
     - pdftex --version
     - bibtex --version
     # Test the symlinks.

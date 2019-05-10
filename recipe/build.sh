@@ -9,6 +9,10 @@ LANG=C; export LANG
 # [[ -d "${PREFIX}"/texmf ]] || mkdir -p "${PREFIX}"/texmf
 # ./configure --help
 
+# Using texlive just does not work, various sub-parts ignore that and use PREFIX/share
+# SHARE_DIR=${PREFIX}/share/texlive
+SHARE_DIR=${PREFIX}/share
+
 declare -a CONFIG_EXTRA
 if [[ ${target_platform} =~ .*ppc.* ]]; then
   # luajit is incompatible with powerpc.
@@ -37,20 +41,20 @@ fi
 # Requires prefix replacement, which does not work correctly.
 mv "${SRC_DIR}"/texk/kpathsea/texmf.cnf tmp.cnf
 sed \
-    -e "s|TEXMFROOT =.*|TEXMFROOT = ${PREFIX}/share/texlive|" \
-    -e "s|TEXMFLOCAL =.*|TEXMFLOCAL = ${PREFIX}/share/texlive/texmf-local|" \
+    -e "s|TEXMFROOT =.*|TEXMFROOT = ${SHARE_DIR}|" \
+    -e "s|TEXMFLOCAL =.*|TEXMFLOCAL = ${SHARE_DIR}/texmf-local|" \
     -e "/^TEXMFCNF/,/^}/d" \
-    -e "s|%TEXMFCNF =.*|TEXMFCNF = ${PREFIX}/share/texlive/texmf-dist/web2c|" \
+    -e "s|%TEXMFCNF =.*|TEXMFCNF = ${SHARE_DIR}/texmf-dist/web2c|" \
     <tmp.cnf >"${SRC_DIR}"/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
-[[ -d "${PREFIX}"/share/texlive/tlpkg/TeXLive ]] || mkdir -p "${PREFIX}"/share/texlive/tlpkg/TeXLive
-[[ -d "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive ]] || mkdir -p "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive
+[[ -d "${SHARE_DIR}/tlpkg/TeXLive" ]] || mkdir -p "${SHARE_DIR}/tlpkg/TeXLive"
+[[ -d "${SHARE_DIR}/texmf-dist/scripts/texlive ]] || mkdir -p "${SHARE_DIR}/texmf-dist/scripts/texlive
 
 # Completely essential, see https://github.com/conda-forge/texlive-core-feedstock/issues/19
 find . -name "TexLive"
-install -v -m644 texk/tests/TeXLive/* "${PREFIX}"/share/texlive/tlpkg/TeXLive || exit 1
-install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${PREFIX}"/share/texlive/texmf-dist/scripts/texlive || exit 1
+install -v -m644 texk/tests/TeXLive/* "${SHARE_DIR}/tlpkg/TeXLive" || exit 1
+install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${SHARE_DIR}/texmf-dist/scripts/texlive || exit 1
 
 export KPATHSEA_WARNING=0
 
@@ -60,7 +64,7 @@ pushd tmp_build
                --prefix="${PREFIX}" \
                --host=${HOST} \
                --build=${BUILD} \
-               --datarootdir="${PREFIX}"/share/texlive \
+               --datarootdir="${SHARE_DIR}" \
                --disable-all-pkgs \
                --disable-native-texlive-build \
                --disable-ipc \
@@ -106,8 +110,8 @@ pushd tmp_build
   # At this point BLFS does:
   # tar -xf ../../texlive-20180414-texmf.tar.xz -C /opt/texlive/2018 --strip-components=1
   # .. but we would like to avoid this 2.5GB of stuff.
-  [[ -d "${PREFIX}"/share/texlive/texmf-dist ]] || mkdir -p "${PREFIX}"/share/texlive/texmf-dist
-  cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${PREFIX}"/share/texlive/texmf-dist/
+  [[ -d "${SHARE_DIR}/texmf-dist ]] || mkdir -p "${SHARE_DIR}/texmf-dist
+  cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${SHARE_DIR}/texmf-dist/
 
   mktexlsr || exit 1
   fmtutil-sys --all || exit 1
@@ -132,13 +136,13 @@ pushd tmp_build
 popd
 
 # Remove info and man pages.
-rm -rf "${PREFIX}"/share/man
-rm -rf "${PREFIX}"/share/texlive/info
+rm -rf "${SHARE_DIR}/man"
+rm -rf "${SHARE_DIR}/info"
 
-mv "${PREFIX}"/share/texlive/texmf-dist/web2c/texmf.cnf tmp.cnf
+mv "${SHARE_DIR}/texmf-dist/web2c/texmf.cnf tmp.cnf"
 sed \
-    -e "s|TEXMFCNF =.*|TEXMFCNF = {$PREFIX/share/texlive/texmf-local/web2c, $PREFIX/share/texlive/texmf-dist/web2c}|" \
-    <tmp.cnf >$PREFIX/share/texlive/texmf-dist/web2c/texmf.cnf
+    -e "s|TEXMFCNF =.*|TEXMFCNF = {${SHARE_DIR}/texmf-local/web2c, ${SHARE_DIR}/texmf-dist/web2c}|" \
+    <tmp.cnf >${SHARE_DIR}/texmf-dist/web2c/texmf.cnf
 rm -f tmp.cnf
 
 # Create symlinks for pdflatex and latex
