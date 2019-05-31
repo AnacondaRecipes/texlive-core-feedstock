@@ -49,12 +49,12 @@ sed \
 rm -f tmp.cnf
 
 [[ -d "${SHARE_DIR}/tlpkg/TeXLive" ]] || mkdir -p "${SHARE_DIR}/tlpkg/TeXLive"
-[[ -d "${SHARE_DIR}/texmf-dist/scripts/texlive ]] || mkdir -p "${SHARE_DIR}/texmf-dist/scripts/texlive
+[[ -d "${SHARE_DIR}/texmf-dist/scripts/texlive" ]] || mkdir -p "${SHARE_DIR}/texmf-dist/scripts/texlive"
 
 # Completely essential, see https://github.com/conda-forge/texlive-core-feedstock/issues/19
 find . -name "TexLive"
 install -v -m644 texk/tests/TeXLive/* "${SHARE_DIR}/tlpkg/TeXLive" || exit 1
-install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${SHARE_DIR}/texmf-dist/scripts/texlive || exit 1
+install -v -m644 texmf/texmf-dist/scripts/texlive/mktexlsr.pl "${SHARE_DIR}/texmf-dist/scripts/texlive" || exit 1
 
 export KPATHSEA_WARNING=0
 
@@ -110,8 +110,8 @@ pushd tmp_build
   # At this point BLFS does:
   # tar -xf ../../texlive-20180414-texmf.tar.xz -C /opt/texlive/2018 --strip-components=1
   # .. but we would like to avoid this 2.5GB of stuff.
-  [[ -d "${SHARE_DIR}/texmf-dist ]] || mkdir -p "${SHARE_DIR}/texmf-dist
-  cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${SHARE_DIR}/texmf-dist/
+  [[ -d "${SHARE_DIR}/texmf-dist" ]] || mkdir -p "${SHARE_DIR}/texmf-dist"
+  cp -rf "${SRC_DIR}"/texmf/texmf-dist/* "${SHARE_DIR}/texmf-dist/"
 
   mktexlsr || exit 1
   fmtutil-sys --all || exit 1

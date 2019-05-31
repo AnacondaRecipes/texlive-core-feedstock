@@ -8,8 +8,6 @@ source:
   - url: https://www.ctan.org/tex-archive/systems/texlive/Source/texlive-{{ version }}-source.tar.xz
     sha256: fe0036d5f66708ad973cdc4e413c0bb9ee2385224481f7b0fb229700a0891e4e
     patches:
-      - texlive-20180414-source-upstream_fixes-1.patch
-      - texlive-20180414-source-upstream_fixes-2.patch
       - texlive-20180414-source-upstream_fixes-3.patch
 
   # 2.5GB download ..
