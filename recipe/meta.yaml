@@ -7,8 +7,8 @@ package:
 source:
   - url: https://www.ctan.org/tex-archive/systems/texlive/Source/texlive-{{ version }}-source.tar.xz
     sha256: a90de25b0fa642b34a90d2c9589e267af4838619b952c58244df3bc8b952a3b3
-    patches:
-      - texlive-20180414-source-upstream_fixes-3.patch
+    #patches:
+    #  - texlive-20180414-source-upstream_fixes-3.patch
 
   # 2.5GB download ..
   # - url: ftp://tug.org/texlive/historic/2018/texlive-20180414-texmf.tar.xz
@@ -18,7 +18,7 @@ source:
   # texlive-20180414-texmf.tar.xz and they matched. File also included as
   # part of the recipe, just in-case. In future will need updating.
   - url: https://www.tug.org/texlive/devsrc/Master/texmf-dist/scripts/texlive/mktexlsr.pl
-    sha256: a90de25b0fa642b34a90d2c9589e267af4838619b952c58244df3bc8b952a3b3
+    sha256: a1164518f96e76ed37766326da154a2656ab7bda94333049408dbe391bdae16c
     folder: texmf/texmf-dist/scripts/texlive
 
 build:
@@ -28,6 +28,7 @@ build:
 
 requirements:
   build:
+    - gnuconfig  # [unix]
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     # These are needed for linking to cairo
@@ -38,7 +39,6 @@ requirements:
     - texinfo
     - make
     - patch  # [unix]
-    - m2-patch  # [win]
   host:
   # --with-system-cairo     use installed cairo headers and library (requires
   # --with-system-freetype2 use installed freetype2 headers and library
@@ -52,19 +52,23 @@ requirements:
   # --with-system-poppler   use installed poppler headers and library (requires
   # --with-system-zlib      use installed zlib headers and library
 
-    - cairo
+    # glib is required for cairo's pkg-config check
+    - glib
+    - cairo >=1.12.0
     - freetype
     - fontconfig
+    - harfbuzz >=1.8.*
     - gmp
     - graphite2
-    - harfbuzz
     - icu
     - libpng
     - mpfr
     - pixman
     - perl
-    - poppler
+    - poppler >=0.64.0,<0.66.0
     - zlib
+  run:
+    - fontconfig
 
 test:
   files:
@@ -81,6 +85,8 @@ test:
 about:
   home: https://www.tug.org/texlive/
   license: GPL-2.0+ and GPL-2.0 and GPL-3.0 and LPPL-1.3c and LPPL-1.0 and Artistic-1.0 and Apache-2.0 and MIT and BSD-3-Clause
+  # See https://www.tug.org/texlive/LICENSE.TL
+  license_file: LICENSE.TL
   summary: 'An easy way to get up and running with the TeX document production system.'
 
 extra:
