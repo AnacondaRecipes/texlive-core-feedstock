@@ -2,6 +2,7 @@
 
 set -ex
 
+# From: https://github.com/TeX-Live/texlive-source/blob/trunk/Build
 unset TEXMFCNF; export TEXMFCNF
 LANG=C; export LANG
 
@@ -15,11 +16,11 @@ fi
 
 # Using texlive just does not work, various sub-parts ignore that and use PREFIX/share
 # SHARE_DIR=${PREFIX}/share/texlive
-SHARE_DIR=${PREFIX}/share
+SHARE_DIR="${PREFIX}"/share
 
 declare -a CONFIG_EXTRA
-# configure: error: Sorry, can not preprocess <lj_arch.h>
-if [[ ${target_platform} =~ .*ppc.* ]] || [[ ${target_platform} =~ .*linux-s390x.* ]]; then
+
+if [[ ${target_platform} =~ .*ppc.* ]]; then
   # luajit is incompatible with powerpc.
   CONFIG_EXTRA+=(--disable-luajittex)
   CONFIG_EXTRA+=(--disable-mfluajit)
@@ -32,9 +33,9 @@ if [ $(uname -s) = "Linux" ] && [ ! -f "${BUILD_PREFIX}/bin/ar" ]; then
     ln -sf "$LD" "${BUILD_PREFIX}/bin/ld"
 fi
 
-TEST_SEGFAULT=no
+TEST_SEGFAULT=yes
 
-if [[ ${TEST_SEGFAULT} == yes ]]; then
+if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
   # -O2 results in:
   # FAIL: mplibdir/mptraptest.test
   # FAIL: pdftexdir/pdftosrc.test
@@ -49,14 +50,14 @@ fi
 # kpathsea scans the texmf.cnf file to set up its hardcoded paths, so set them
 # up before building. It doesn't seem to handle multivalued TEXMFCNF entries,
 # so we patch that up after install.
-
-mv $SRC_DIR/texk/kpathsea/texmf.cnf tmp.cnf
+# Requires prefix replacement, which does not work correctly.
+mv "${SRC_DIR}"/texk/kpathsea/texmf.cnf tmp.cnf
 sed \
     -e "s|TEXMFROOT =.*|TEXMFROOT = ${SHARE_DIR}|" \
     -e "s|TEXMFLOCAL =.*|TEXMFLOCAL = ${SHARE_DIR}/texmf-local|" \
     -e "/^TEXMFCNF/,/^}/d" \
     -e "s|%TEXMFCNF =.*|TEXMFCNF = ${SHARE_DIR}/texmf-dist/web2c|" \
-    <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
+    <tmp.cnf >"${SRC_DIR}"/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
 # Needed to find .pc files from CDTs.
@@ -148,13 +149,13 @@ mkdir -p tmp_build && pushd tmp_build
 popd
 
 # Remove info and man pages.
-rm -rf ${SHARE_DIR}/man
-rm -rf ${SHARE_DIR}/info
+rm -rf "${SHARE_DIR}/man"
+rm -rf "${SHARE_DIR}/info"
 
-mv ${SHARE_DIR}/texmf-dist/web2c/texmf.cnf tmp.cnf
+mv "${SHARE_DIR}"/texmf-dist/web2c/texmf.cnf tmp.cnf
 sed \
     -e "s|TEXMFCNF =.*|TEXMFCNF = {${SHARE_DIR}/texmf-local/web2c, ${SHARE_DIR}/texmf-dist/web2c}|" \
-    <tmp.cnf >${SHARE_DIR}/texmf-dist/web2c/texmf.cnf
+    <tmp.cnf >"${SHARE_DIR}"/texmf-dist/web2c/texmf.cnf
 rm -f tmp.cnf
 
 # Create symlinks for pdflatex and latex

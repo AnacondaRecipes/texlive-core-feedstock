@@ -10,7 +10,8 @@ source:
 
 build:
   number: 0
-  skip: True  # [win]
+  # can not preprocess <lj_arch.h> on s390x
+  skip: True  # [win or s390x]
   detect_binary_files_with_prefix: true
   ignore_run_exports_from:
     - perl 5.*
@@ -21,14 +22,14 @@ requirements:
     - {{ compiler('cxx') }}
     # These CDTs are needed for linking to cairo,
     # check them by 'pkg-config --cflags-only-I cairo'
-    - {{ cdt('libxrender-devel') }}  # [linux]
-    - {{ cdt('libxext') }}           # [linux]
-    - {{ cdt('libxext-devel') }}     # [linux]
-    - {{ cdt('libxau-devel') }}      # [linux]
-    # Package 'xproto', required by 'xau'
-    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
+    - {{ cdt('libxrender-devel') }}      # [linux]
     # Package 'x11', required by 'xrender'
     - {{ cdt('libx11-devel') }}          # [linux]
+    - {{ cdt('libxext') }}               # [linux]
+    - {{ cdt('libxext-devel') }}         # [linux]
+    - {{ cdt('libxau-devel') }}          # [linux]
+    # Package 'xproto', required by 'xau'
+    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - pkg-config
     - texinfo
     - make
