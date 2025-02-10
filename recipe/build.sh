@@ -2,9 +2,6 @@
 
 set -ex
 
-export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
-export LIBRARY_PATH="$LIBRARY_PATH:$SDKROOT/usr/lib"
-
 unset TEXMFCNF; export TEXMFCNF
 LANG=C; export LANG
 
