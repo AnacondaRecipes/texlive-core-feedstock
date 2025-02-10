@@ -25,7 +25,7 @@ requirements:
     - {{ cdt('libxext-devel') }}     # [linux]
     - {{ cdt('libxau-devel') }}      # [linux]
     # Package 'xproto', required by 'xau'
-    - xorg-xproto                    # [linux]
+    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - pkg-config
     - texinfo
     - make
