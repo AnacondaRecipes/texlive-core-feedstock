@@ -20,8 +20,7 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    # These CDTs are needed for linking to cairo,
-    # check them by 'pkg-config --cflags-only-I cairo'
+    # These CDTs are needed for linking to cairo
     - {{ cdt('libxrender-devel') }}      # [linux]
     # Package 'x11', required by 'xrender'
     - {{ cdt('libx11-devel') }}          # [linux]
@@ -64,6 +63,7 @@ test:
 about:
   home: https://www.tug.org/texlive/
   doc_url: https://www.tug.org/texlive/doc.html
+  # A mirror of the upstream Subversion repository: https://github.com/TeX-Live/texlive-source
   dev_url: https://svn.tug.org/texlive/trunk/
   license: GPL-2.0-or-later AND GPL-2.0-only AND GPL-3.0-only AND LPPL-1.3c AND LPPL-1.0 AND Artistic-1.0 AND Apache-2.0 AND MIT AND BSD-3-Clause
   # See https://www.tug.org/texlive/LICENSE.TL

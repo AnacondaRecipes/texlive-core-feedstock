@@ -33,7 +33,8 @@ if [ $(uname -s) = "Linux" ] && [ ! -f "${BUILD_PREFIX}/bin/ar" ]; then
     ln -sf "$LD" "${BUILD_PREFIX}/bin/ld"
 fi
 
-TEST_SEGFAULT=yes
+# 2025/02/10: tests mplibdir/mptraptest.test & pdftexdir/pdftosrc.test still fail.
+TEST_SEGFAULT=no
 
 if [[ ${TEST_SEGFAULT} == yes ]] && [[ ${target_platform} =~ .*linux.* ]]; then
   # -O2 results in:
@@ -61,10 +62,8 @@ sed \
 rm -f tmp.cnf
 
 # Needed to find .pc files from CDTs.
-# Tell pkg\-config to search the conda-provided sysroot for necessary X11
-# configuration (\.pc) files. Also, explicitly request XCB support so
-# \./configure fails it can't find the needed libraries, rather than
-# building a Cairo package that over-depends on libxcb.
+# Tell pkg-config to search the conda-provided sysroot for necessary X11
+# configuration (.pc) files.
 export PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-}:${PREFIX}/lib/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/lib64/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/share/pkgconfig
 
 # Check cairo cflags. It fails if required CDTs are not present
