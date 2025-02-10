@@ -18,10 +18,18 @@ fi
 SHARE_DIR=${PREFIX}/share
 
 declare -a CONFIG_EXTRA
-if [[ ${target_platform} =~ .*ppc.* ]]; then
+# configure: error: Sorry, can not preprocess <lj_arch.h>
+if [[ ${target_platform} =~ .*ppc.* ]] || [[ ${target_platform} =~ .*linux-s390x.* ]]; then
   # luajit is incompatible with powerpc.
   CONFIG_EXTRA+=(--disable-luajittex)
   CONFIG_EXTRA+=(--disable-mfluajit)
+fi
+
+# For some weird reason, ar is not picked up on linux-aarch64
+if [ $(uname -s) = "Linux" ] && [ ! -f "${BUILD_PREFIX}/bin/ar" ]; then
+    ln -s "${BUILD}-ar" "${BUILD_PREFIX}/bin/ar"
+    ln -s "$RANLIB" "${BUILD_PREFIX}/bin/ranlib"
+    ln -sf "$LD" "${BUILD_PREFIX}/bin/ld"
 fi
 
 TEST_SEGFAULT=no
@@ -51,21 +59,16 @@ sed \
     <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
+# Needed to find .pc files from CDTs.
+# Tell pkg\-config to search the conda-provided sysroot for necessary X11
+# configuration (\.pc) files. Also, explicitly request XCB support so
+# \./configure fails it can't find the needed libraries, rather than
+# building a Cairo package that over-depends on libxcb.
 export PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-}:${PREFIX}/lib/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/lib64/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/share/pkgconfig
 
-# Needed to find .pc files from CDTs
-#: ${CONDA_BUILD_SYSROOT:=`"$CC" -print-sysroot`}
-
-echo "CONDA_BUILD_SYSROOT: ${CONDA_BUILD_SYSROOT}"
-#export PKG_CONFIG_PATH="${CONDA_BUILD_SYSROOT}/usr/lib64/pkgconfig"
-echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
-
-echo "pkg-config --cflags-only-I cairo"
+# Check cairo cflags. It fails if required CDTs are not present
+echo "Check pkg-config cairo cflags..."
 pkg-config --cflags-only-I cairo
-echo "pkg-config cairo --cflags"
-pkg-config cairo --cflags
-echo "pkg-config cairo --libs"
-pkg-config cairo --libs
 
 [[ -d "${SHARE_DIR}/tlpkg/TeXLive" ]] || mkdir -p "${SHARE_DIR}/tlpkg/TeXLive"
 [[ -d "${SHARE_DIR}/texmf-dist/scripts/texlive" ]] || mkdir -p "${SHARE_DIR}/texmf-dist/scripts/texlive"
