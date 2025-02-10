@@ -51,7 +51,14 @@ sed \
     <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
-export PKG_CONFIG_LIBDIR=$PREFIX/lib
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-}:${PREFIX}/lib/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/lib64/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/share/pkgconfig
+
+echo "pkg-config --cflags-only-I cairo"
+pkg-config --cflags-only-I cairo
+echo "pkg-config cairo --cflags"
+pkg-config cairo --cflags
+echo "pkg-config cairo --libs"
+pkg-config cairo --libs
 
 [[ -d "${SHARE_DIR}/tlpkg/TeXLive" ]] || mkdir -p "${SHARE_DIR}/tlpkg/TeXLive"
 [[ -d "${SHARE_DIR}/texmf-dist/scripts/texlive" ]] || mkdir -p "${SHARE_DIR}/texmf-dist/scripts/texlive"
