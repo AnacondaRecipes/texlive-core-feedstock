@@ -19,11 +19,13 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    # These are needed for linking to cairo
+    # These CDTs are needed for linking to cairo
     - {{ cdt('libxrender-devel') }}  # [linux]
     - {{ cdt('libxext') }}           # [linux]
     - {{ cdt('libxext-devel') }}     # [linux]
     - {{ cdt('libxau-devel') }}      # [linux]
+    # Package 'xproto', required by 'xau'
+    - xorg-xproto                    # [linux]
     - pkg-config
     - texinfo
     - make
