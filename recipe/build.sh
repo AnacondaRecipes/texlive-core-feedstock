@@ -51,7 +51,11 @@ sed \
     <tmp.cnf >$SRC_DIR/texk/kpathsea/texmf.cnf
 rm -f tmp.cnf
 
-export PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-}:${PREFIX}/lib/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/lib64/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/share/pkgconfig
+#export PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-}:${PREFIX}/lib/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/lib64/pkgconfig:$BUILD_PREFIX/$BUILD/sysroot/usr/share/pkgconfig
+
+# Needed to find .pc files from CDTs
+: ${CONDA_BUILD_SYSROOT:=`"$CC" -print-sysroot`}
+export PKG_CONFIG_PATH="${CONDA_BUILD_SYSROOT}/usr/lib64/pkgconfig"
 
 echo "pkg-config --cflags-only-I cairo"
 pkg-config --cflags-only-I cairo
