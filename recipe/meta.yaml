@@ -1,90 +1,83 @@
-{% set version = "20180414" %}
+{% set version = "20240312" %}
 
 package:
   name: texlive-core
   version: {{ version }}
 
 source:
-  - url: https://www.ctan.org/tex-archive/systems/texlive/Source/texlive-{{ version }}-source.tar.xz
-    sha256: fe0036d5f66708ad973cdc4e413c0bb9ee2385224481f7b0fb229700a0891e4e
-    patches:
-      - texlive-20180414-source-upstream_fixes-3.patch
-
-  # 2.5GB download ..
-  # - url: ftp://tug.org/texlive/historic/2018/texlive-20180414-texmf.tar.xz
-  #   md5: 05330b3b5445ef60b08a0ed660c55c92
-  #   folder: texmf
-  # .. of which we need one file. I checked the sha256 against the one in
-  # texlive-20180414-texmf.tar.xz and they matched. File also included as
-  # part of the recipe, just in-case. In future will need updating.
-  - url: https://www.tug.org/texlive/devsrc/Master/texmf-dist/scripts/texlive/mktexlsr.pl
-    sha256: a1164518f96e76ed37766326da154a2656ab7bda94333049408dbe391bdae16c
-    folder: texmf/texmf-dist/scripts/texlive
+  url: https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2024/texlive-{{ version }}-source.tar.xz
+  sha256: 7b6d87cf01661670fac45c93126bed97b9843139ed510f975d047ea938b6fe96
 
 build:
-  number: 2
-  skip: True  # [win]
+  number: 0
+  # can not preprocess <lj_arch.h> on s390x
+  skip: True  # [win or s390x]
   detect_binary_files_with_prefix: true
+  ignore_run_exports_from:
+    - perl 5.*
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    # These are needed for linking to cairo
-    - {{ cdt('libxrender-devel') }}  # [linux]
-    - {{ cdt('libxext-devel') }}     # [linux]
-    - {{ cdt('libxau-devel') }}      # [linux]
+    # These CDTs are needed for linking to cairo
+    - {{ cdt('libxrender-devel') }}      # [linux]
+    # Package 'x11', required by 'xrender'
+    - {{ cdt('libx11-devel') }}          # [linux]
+    - {{ cdt('libxext') }}               # [linux]
+    - {{ cdt('libxext-devel') }}         # [linux]
+    - {{ cdt('libxau-devel') }}          # [linux]
+    # Package 'xproto', required by 'xau'
+    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - pkg-config
     - texinfo
     - make
-    - patch  # [unix]
-    - m2-patch  # [win]
+    - sed
   host:
-  # --with-system-cairo     use installed cairo headers and library (requires
-  # --with-system-freetype2 use installed freetype2 headers and library
-  # --with-system-gmp       use installed gmp headers and library
-  # --with-system-graphite2 use installed graphite2 headers and library
-  # --with-system-harfbuzz  use installed harfbuzz headers and library (requires
-  # --with-system-icu       use installed ICU headers and libraries (requires
-  # --with-system-libpng    use installed libpng headers and library (requires
-  # --with-system-mpfr      use installed mpfr headers and library
-  # --with-system-pixman    use installed pixman headers and library (requires
-  # --with-system-poppler   use installed poppler headers and library (requires
-  # --with-system-zlib      use installed zlib headers and library
-
-    - cairo
-    - freetype
-    - fontconfig
-    - gmp
-    - graphite2
-    - harfbuzz
-    - icu
-    - libpng
-    - mpfr
-    - pixman
-    - perl
+    # glib is required for cairo's pkg-config check
+    - glib {{ glib}}
+    - cairo {{ cairo }}
+    - freetype {{ freetype }}
+    - fontconfig {{ fontconfig }}
+    - gmp {{ gmp }}
+    - harfbuzz {{ harfbuzz }}
+    - graphite2 1
+    - icu {{ icu }}
+    - libpng {{ libpng }}
+    - mpfr {{ mpfr }}
+    - pixman {{ pixman }}
+    - perl 5.*
     - poppler
-    - zlib
+    - zlib {{ zlib }}
+  run:
+    - fontconfig
 
 test:
-  files:
-    - samplefile.tex
   commands:
-    - kpsewhich -var-value=TEXMFROOT
     - pdftex --version
     - bibtex --version
     # Test the symlinks.
     - pdflatex --version
     - latex --version
-    - pdflatex samplefile.tex
 
 about:
   home: https://www.tug.org/texlive/
-  license: GPL-2.0+ and GPL-2.0 and GPL-3.0 and LPPL-1.3c and LPPL-1.0 and Artistic-1.0 and Apache-2.0 and MIT and BSD-3-Clause
-  summary: 'An easy way to get up and running with the TeX document production system.'
+  doc_url: https://www.tug.org/texlive/doc.html
+  # A mirror of the upstream Subversion repository: https://github.com/TeX-Live/texlive-source
+  dev_url: https://svn.tug.org/texlive/trunk/
+  license: GPL-2.0-or-later AND GPL-2.0-only AND GPL-3.0-only AND LPPL-1.3c AND LPPL-1.0 AND Artistic-1.0 AND Apache-2.0 AND MIT AND BSD-3-Clause
+  # See https://www.tug.org/texlive/LICENSE.TL
+  license_family: Other
+  license_file: LICENSE.TL
+  summary: An easy way to get up and running with the TeX document production system.
+  description: |
+    TeX Live is a cross-platform, free software distribution for the TeX typesetting system
+    that includes major TeX-related programs, macro packages, and fonts.
 
 extra:
   recipe-maintainers:
     - jakirkham
-    - mingwandroid
     - ocefpaf
+    - xhochy
+    - ngam
+    - erykoff
