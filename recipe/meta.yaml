@@ -9,9 +9,9 @@ source:
   sha256: 7b6d87cf01661670fac45c93126bed97b9843139ed510f975d047ea938b6fe96
 
 build:
-  number: 0
+  number: 2
   # can not preprocess <lj_arch.h> on s390x
-  skip: True  # [win or s390x]
+  skip: true  # [win or s390x]
   detect_binary_files_with_prefix: true
   ignore_run_exports_from:
     - perl 5.*
@@ -21,14 +21,8 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     # These CDTs are needed for linking to cairo
-    - {{ cdt('libxrender-devel') }}      # [linux]
     # Package 'x11', required by 'xrender'
-    - {{ cdt('libx11-devel') }}          # [linux]
-    - {{ cdt('libxext') }}               # [linux]
-    - {{ cdt('libxext-devel') }}         # [linux]
-    - {{ cdt('libxau-devel') }}          # [linux]
     # Package 'xproto', required by 'xau'
-    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - pkg-config
     - texinfo
     - make
@@ -49,6 +43,12 @@ requirements:
     - perl 5.*
     - poppler
     - zlib {{ zlib }}
+    - xorg-libxrender
+    - xorg-libx11
+    - xorg-libxext
+    - xorg-libxext
+    - xorg-libxau
+    - xorg-xproto
   run:
     - fontconfig
 
@@ -73,6 +73,8 @@ about:
   description: |
     TeX Live is a cross-platform, free software distribution for the TeX typesetting system
     that includes major TeX-related programs, macro packages, and fonts.
+
+
 
 extra:
   recipe-maintainers:
