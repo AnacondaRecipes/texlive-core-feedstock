@@ -10,6 +10,7 @@ source:
 
 build:
   number: 1
+  skip: true  # [win]
   detect_binary_files_with_prefix: true
   ignore_run_exports_from:
     - perl 5.*
@@ -19,9 +20,9 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - pkg-config
-    - texinfo
-    - make
-    - sed
+    - texinfo          # [not win]
+    - make             # [not win]
+    - sed              # [not win]
   host:
     # glib is required for cairo's pkg-config check
     - glib {{ glib}}
@@ -31,13 +32,13 @@ requirements:
     - fontconfig {{ fontconfig }}
     - gmp {{ gmp }}
     - harfbuzz {{ harfbuzz }}
-    - graphite2 1
+    - graphite2 {{ graphite2 }}
     - icu {{ icu }}
     - libpng {{ libpng }}
     - mpfr {{ mpfr }}
     - pixman {{ pixman }}
     - perl 5.*
-    - poppler
+    - poppler 24.09
     - zlib {{ zlib }}
   run:
     - fontconfig
