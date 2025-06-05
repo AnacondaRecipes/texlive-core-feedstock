@@ -9,9 +9,8 @@ source:
   sha256: 7b6d87cf01661670fac45c93126bed97b9843139ed510f975d047ea938b6fe96
 
 build:
-  number: 0
-  # can not preprocess <lj_arch.h> on s390x
-  skip: True  # [win or s390x]
+  number: 1
+  skip: true  # [win]
   detect_binary_files_with_prefix: true
   ignore_run_exports_from:
     - perl 5.*
@@ -20,34 +19,26 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    # These CDTs are needed for linking to cairo
-    - {{ cdt('libxrender-devel') }}      # [linux]
-    # Package 'x11', required by 'xrender'
-    - {{ cdt('libx11-devel') }}          # [linux]
-    - {{ cdt('libxext') }}               # [linux]
-    - {{ cdt('libxext-devel') }}         # [linux]
-    - {{ cdt('libxau-devel') }}          # [linux]
-    # Package 'xproto', required by 'xau'
-    - {{ cdt('xorg-x11-proto-devel') }}  # [linux]
     - pkg-config
-    - texinfo
-    - make
-    - sed
+    - texinfo          # [not win]
+    - make             # [not win]
+    - sed              # [not win]
   host:
     # glib is required for cairo's pkg-config check
     - glib {{ glib}}
+    # xorg/xcb/x11 packages through cairo.
     - cairo {{ cairo }}
     - freetype {{ freetype }}
     - fontconfig {{ fontconfig }}
     - gmp {{ gmp }}
     - harfbuzz {{ harfbuzz }}
-    - graphite2 1
+    - graphite2 {{ graphite2 }}
     - icu {{ icu }}
     - libpng {{ libpng }}
     - mpfr {{ mpfr }}
     - pixman {{ pixman }}
     - perl 5.*
-    - poppler
+    - poppler 24.09
     - zlib {{ zlib }}
   run:
     - fontconfig
