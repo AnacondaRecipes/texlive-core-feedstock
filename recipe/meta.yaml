@@ -38,7 +38,7 @@ requirements:
     - icu {{ icu }}
     - libpng {{ libpng }}
     - mpfr {{ mpfr }}
-    - pixman 0.46.4
+    - pixman {{ pixman }}
     - perl 5.*
     - poppler 24.09
     - zlib {{ zlib }}
