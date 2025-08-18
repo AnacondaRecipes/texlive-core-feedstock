@@ -1,15 +1,16 @@
+{% set name = "texlive-core" %}
 {% set version = "20240312" %}
 
 package:
-  name: texlive-core
+  name: {{ name }}
   version: {{ version }}
 
 source:
-  url: https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2024/texlive-{{ version }}-source.tar.xz
+  url: https://ftp.math.utah.edu/pub/tex/historic/systems/{{ name.split('-')[0] }}/2024/{{ name.split('-')[0] }}-{{ version }}-source.tar.xz
   sha256: 7b6d87cf01661670fac45c93126bed97b9843139ed510f975d047ea938b6fe96
 
 build:
-  number: 1
+  number: 2
   skip: true  # [win]
   detect_binary_files_with_prefix: true
   ignore_run_exports_from:
@@ -17,6 +18,7 @@ build:
 
 requirements:
   build:
+    - {{ stdlib('c') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - pkg-config
@@ -25,7 +27,7 @@ requirements:
     - sed              # [not win]
   host:
     # glib is required for cairo's pkg-config check
-    - glib {{ glib}}
+    - glib {{ glib }}
     # xorg/xcb/x11 packages through cairo.
     - cairo {{ cairo }}
     - freetype {{ freetype }}
@@ -52,10 +54,10 @@ test:
     - latex --version
 
 about:
-  home: https://www.tug.org/texlive/
+  home: https://www.tug.org/texlive
   doc_url: https://www.tug.org/texlive/doc.html
   # A mirror of the upstream Subversion repository: https://github.com/TeX-Live/texlive-source
-  dev_url: https://svn.tug.org/texlive/trunk/
+  dev_url: https://svn.tug.org/texlive/trunk
   license: GPL-2.0-or-later AND GPL-2.0-only AND GPL-3.0-only AND LPPL-1.3c AND LPPL-1.0 AND Artistic-1.0 AND Apache-2.0 AND MIT AND BSD-3-Clause
   # See https://www.tug.org/texlive/LICENSE.TL
   license_family: Other
